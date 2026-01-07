@@ -17,9 +17,35 @@ const App: React.FC = () => {
     unit: 'px',
     percentage: 50,
   });
+
+  // History state for Undo/Redo
+  const [history, setHistory] = useState<ResizeSettings[]>([]);
+  const [future, setFuture] = useState<ResizeSettings[]>([]);
+
   const [resizedUrl, setResizedUrl] = useState<string | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const pushToHistory = (prevSettings: ResizeSettings) => {
+    setHistory(prev => [...prev, prevSettings]);
+    setFuture([]); // Clear redo stack on new action
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    const previous = history[history.length - 1];
+    setFuture(prev => [settings, ...prev]);
+    setHistory(prev => prev.slice(0, -1));
+    setSettings(previous);
+  };
+
+  const handleRedo = () => {
+    if (future.length === 0) return;
+    const next = future[0];
+    setHistory(prev => [...prev, settings]);
+    setFuture(prev => prev.slice(1));
+    setSettings(next);
+  };
 
   const handleFileUpload = (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -36,11 +62,16 @@ const App: React.FC = () => {
           height: img.height,
         };
         setFileData(data);
-        setSettings(prev => ({
-          ...prev,
+        const initialSettings: ResizeSettings = {
           width: img.width,
           height: img.height,
-        }));
+          maintainAspectRatio: true,
+          unit: 'px',
+          percentage: 50,
+        };
+        setSettings(initialSettings);
+        setHistory([]);
+        setFuture([]);
       };
       img.src = e.target?.result as string;
     };
@@ -61,6 +92,8 @@ const App: React.FC = () => {
   const reset = () => {
     setFileData(null);
     setResizedUrl(null);
+    setHistory([]);
+    setFuture([]);
     setSettings({
       width: 0,
       height: 0,
@@ -111,6 +144,7 @@ const App: React.FC = () => {
   const updateWidth = (w: number) => {
     if (!fileData) return;
     const newWidth = isNaN(w) ? 0 : Math.max(0, w);
+    pushToHistory(settings);
     setSettings(prev => {
       let newHeight = prev.height;
       if (prev.maintainAspectRatio && newWidth > 0) {
@@ -123,6 +157,7 @@ const App: React.FC = () => {
   const updateHeight = (h: number) => {
     if (!fileData) return;
     const newHeight = isNaN(h) ? 0 : Math.max(0, h);
+    pushToHistory(settings);
     setSettings(prev => {
       let newWidth = prev.width;
       if (prev.maintainAspectRatio && newHeight > 0) {
@@ -130,6 +165,21 @@ const App: React.FC = () => {
       }
       return { ...prev, height: newHeight, width: newWidth };
     });
+  };
+
+  const handleUnitChange = (unit: 'px' | 'percent') => {
+    if (unit === settings.unit) return;
+    pushToHistory(settings);
+    setSettings(prev => ({ ...prev, unit }));
+  };
+
+  const handleRatioChange = (maintainAspectRatio: boolean) => {
+    pushToHistory(settings);
+    setSettings(prev => ({ ...prev, maintainAspectRatio }));
+  };
+
+  const handlePercentageChange = (percentage: number) => {
+    setSettings(prev => ({ ...prev, percentage }));
   };
 
   const getCurrentDimensions = () => {
@@ -165,7 +215,7 @@ const App: React.FC = () => {
               <ul className="flex space-x-6 text-sm font-medium text-gray-600">
                 <li><a href="#how-it-works" className="hover:text-indigo-600">{t.howItWorks}</a></li>
                 <li><a href="#faq" className="hover:text-indigo-600">{t.faq}</a></li>
-                <li><a href="#privacy" className="hover:text-indigo-600">{t.privacy}</a></li>
+                <li><a href="#privacy" className="hover:text-indigo-600">{t.privacyPolicy}</a></li>
               </ul>
             </nav>
             <div className="relative">
@@ -185,7 +235,8 @@ const App: React.FC = () => {
 
       <main className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <AdPlaceholder type="banner" label={t.adText} className="mb-8" />
+          {/* Top Banner Ad - Leaderboard */}
+          <AdPlaceholder type="banner" label={t.adText} className="mb-12" />
 
           <section className="text-center mb-12">
             <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 px-4 leading-tight">
@@ -251,21 +302,41 @@ const App: React.FC = () => {
                       
                       <div className="w-full md:w-80 space-y-6">
                         <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 shadow-sm">
-                          <h3 className="font-bold text-indigo-900 mb-4 flex items-center">
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path></svg>
-                            {t.resizeOptions}
-                          </h3>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-indigo-900 flex items-center">
+                              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path></svg>
+                              {t.resizeOptions}
+                            </h3>
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={handleUndo} 
+                                disabled={history.length === 0}
+                                title={t.undo}
+                                className="p-1.5 rounded-md hover:bg-white text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                              </button>
+                              <button 
+                                onClick={handleRedo} 
+                                disabled={future.length === 0}
+                                title={t.redo}
+                                className="p-1.5 rounded-md hover:bg-white text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path></svg>
+                              </button>
+                            </div>
+                          </div>
                           
                           <div className="space-y-4">
                             <div className="flex gap-2 p-1 bg-white rounded-lg border border-gray-200 shadow-sm">
                               <button 
-                                onClick={() => setSettings(s => ({...s, unit: 'px'}))}
+                                onClick={() => handleUnitChange('px')}
                                 className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${settings.unit === 'px' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
                               >
                                 {t.pixels}
                               </button>
                               <button 
-                                onClick={() => setSettings(s => ({...s, unit: 'percent'}))}
+                                onClick={() => handleUnitChange('percent')}
                                 className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${settings.unit === 'percent' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
                               >
                                 {t.percentage}
@@ -299,7 +370,7 @@ const App: React.FC = () => {
                                     type="checkbox" 
                                     id="ratio"
                                     checked={settings.maintainAspectRatio}
-                                    onChange={(e) => setSettings(s => ({...s, maintainAspectRatio: e.target.checked}))}
+                                    onChange={(e) => handleRatioChange(e.target.checked)}
                                     className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                   />
                                   <label htmlFor="ratio" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">{t.lockRatio}</label>
@@ -316,7 +387,9 @@ const App: React.FC = () => {
                                   min="1" 
                                   max="100" 
                                   value={settings.percentage}
-                                  onChange={(e) => setSettings(s => ({...s, percentage: parseInt(e.target.value)}))}
+                                  onMouseDown={() => pushToHistory(settings)}
+                                  onTouchStart={() => pushToHistory(settings)}
+                                  onChange={(e) => handlePercentageChange(parseInt(e.target.value))}
                                   className="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                 />
                                 <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -371,7 +444,9 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-8">
+              {/* Sidebar Ad Placement - Medium Rectangle */}
               <AdPlaceholder type="in-content" label={t.adText} />
+
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center">
                    <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -392,6 +467,7 @@ const App: React.FC = () => {
                   </li>
                 </ul>
               </div>
+
               <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                 <h3 className="font-bold mb-2 flex items-center">
@@ -402,6 +478,9 @@ const App: React.FC = () => {
                   {t.proTipText}
                 </p>
               </div>
+
+              {/* Second Sidebar Ad Placement */}
+              <AdPlaceholder type="in-content" label={t.adText} />
             </div>
           </div>
           
@@ -426,14 +505,21 @@ const App: React.FC = () => {
             </div>
           </div>
 
+          {/* In-Content Ad placement between sections */}
+          <div className="my-20">
+             <AdPlaceholder type="banner" label={t.adText} />
+          </div>
+
           <div id="faq">
             <FAQ language={lang} />
           </div>
+
+          {/* Large Footer Ad Placement */}
           <AdPlaceholder type="footer" label={t.adText} />
         </div>
       </main>
 
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-12 mt-12">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-6">
             <div className="bg-indigo-600 p-2 rounded-lg">

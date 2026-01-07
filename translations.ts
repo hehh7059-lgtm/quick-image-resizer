@@ -46,7 +46,9 @@ export const translations = {
     terms: "Terms of Service",
     contact: "Contact Us",
     rights: "All rights reserved. No cookies, no trackers, just fast resizing.",
-    adText: "Advertisement"
+    adText: "Advertisement",
+    undo: "Undo",
+    redo: "Redo"
   },
   es: {
     title: "QuickImageResizer – Redimensionar Imágenes Online al Instante",
@@ -92,7 +94,9 @@ export const translations = {
     terms: "Términos",
     contact: "Contacto",
     rights: "Todos los derechos reservados. Sin cookies ni rastreadores.",
-    adText: "Publicidad"
+    adText: "Publicidad",
+    undo: "Deshacer",
+    redo: "Rehacer"
   },
   fr: {
     title: "QuickImageResizer – Redimensionner vos Images Instantanément",
@@ -138,7 +142,9 @@ export const translations = {
     terms: "Conditions",
     contact: "Contact",
     rights: "Tous droits réservés. Pas de cookies, pas de traqueurs.",
-    adText: "Publicité"
+    adText: "Publicité",
+    undo: "Annuler",
+    redo: "Rétablir"
   },
   de: {
     title: "QuickImageResizer – Bilder online sofort anpassen",
@@ -184,7 +190,9 @@ export const translations = {
     terms: "AGB",
     contact: "Kontakt",
     rights: "Alle Rechte vorbehalten. Keine Cookies, kein Tracking.",
-    adText: "Werbung"
+    adText: "Werbung",
+    undo: "Rückgängig",
+    redo: "Wiederholen"
   },
   nl: {
     title: "QuickImageResizer – Verklein afbeeldingen direct online",
@@ -230,6 +238,8 @@ export const translations = {
     terms: "Voorwaarden",
     contact: "Contact",
     rights: "Alle rechten voorbehouden. Geen cookies, geen trackers.",
-    adText: "Advertentie"
+    adText: "Advertentie",
+    undo: "Ongedaan maken",
+    redo: "Opnieuw"
   }
 };
