@@ -53,7 +53,8 @@ export const translations = {
     quality: "Quality",
     resultingSize: "Estimated Result Size",
     kb: "KB",
-    mb: "MB"
+    mb: "MB",
+    dimensionError: "Image too large for safe processing. Try smaller size."
   },
   es: {
     title: "QuickImageResizer – Redimensionar Imágenes Online al Instante",
@@ -106,7 +107,8 @@ export const translations = {
     quality: "Calidad",
     resultingSize: "Tamaño estimado",
     kb: "KB",
-    mb: "MB"
+    mb: "MB",
+    dimensionError: "Imagen demasiado grande. Intenta con un tamaño menor."
   },
   fr: {
     title: "QuickImageResizer – Redimensionner vos Images Instantanément",
@@ -152,14 +154,15 @@ export const translations = {
     terms: "Conditions",
     contact: "Contact",
     rights: "Tous droits réservés. Pas de cookies, pas de traqueurs.",
-    adText: "Publicité",
+    adText: "Publicidad",
     undo: "Annuler",
     redo: "Rétablir",
     compression: "Compression d'image (Qualité)",
     quality: "Qualité",
     resultingSize: "Taille estimée",
     kb: "KB",
-    mb: "MB"
+    mb: "MB",
+    dimensionError: "Image trop grande. Essayez une taille plus petite."
   },
   de: {
     title: "QuickImageResizer – Bilder online sofort anpassen",
@@ -212,7 +215,8 @@ export const translations = {
     quality: "Qualität",
     resultingSize: "Geschätzte Größe",
     kb: "KB",
-    mb: "MB"
+    mb: "MB",
+    dimensionError: "Bild zu groß. Versuchen Sie eine kleinere Größe."
   },
   nl: {
     title: "QuickImageResizer – Verklein afbeeldingen direct online",
@@ -249,7 +253,7 @@ export const translations = {
     proTipText: "Vergrendel de verhouding om vervorming te voorkomen. Gebruik de slider voor snelle optimalisatie.",
     step1: "Uploaden",
     step1Text: "Sleep je JPG, PNG of WebP bestand hierheen.",
-    step2: "Aanpassen",
+    step2: "Anpassen",
     step2Text: "Voer afmetingen in of gebruik de percentageschuif.",
     step3: "Downloaden",
     step3Text: "Bekijk het resultaat en download je verkleinde foto.",
@@ -257,7 +261,7 @@ export const translations = {
     privacyPolicy: "Privacybeleid",
     terms: "Voorwaarden",
     contact: "Contact",
-    rights: "Alle rechten voorbehouden. Geen cookies, geen trackers.",
+    rights: "Alle rechten voorbehouden. Geen cookies, no trackers.",
     adText: "Advertentie",
     undo: "Ongedaan maken",
     redo: "Opnieuw",
@@ -265,6 +269,7 @@ export const translations = {
     quality: "Kwaliteit",
     resultingSize: "Geschatte grootte",
     kb: "KB",
-    mb: "MB"
+    mb: "MB",
+    dimensionError: "Afbeelding te groot. Probeer een kleiner formaat."
   }
 };

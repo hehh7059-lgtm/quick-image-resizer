@@ -5,6 +5,8 @@ import AdPlaceholder from './components/AdPlaceholder.tsx';
 import FAQ from './components/FAQ.tsx';
 import { translations, Language } from './translations.ts';
 
+const MAX_DIMENSION = 4000;
+
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
   const t = translations[lang];
@@ -72,9 +74,24 @@ const App: React.FC = () => {
           size: file.size,
         };
         setFileData(data);
+        
+        // Initial settings cap to 4000 if source is larger
+        let initialWidth = img.width;
+        let initialHeight = img.height;
+        
+        if (initialWidth > MAX_DIMENSION || initialHeight > MAX_DIMENSION) {
+          if (initialWidth > initialHeight) {
+            initialHeight = Math.round((MAX_DIMENSION / initialWidth) * initialHeight);
+            initialWidth = MAX_DIMENSION;
+          } else {
+            initialWidth = Math.round((MAX_DIMENSION / initialHeight) * initialWidth);
+            initialHeight = MAX_DIMENSION;
+          }
+        }
+
         const initialSettings: ResizeSettings = {
-          width: img.width,
-          height: img.height,
+          width: initialWidth,
+          height: initialHeight,
           maintainAspectRatio: true,
           unit: 'px',
           percentage: 50,
@@ -131,8 +148,8 @@ const App: React.FC = () => {
         targetHeight = Math.round((fileData.height * settings.percentage) / 100);
       }
 
-      targetWidth = Math.max(1, targetWidth);
-      targetHeight = Math.max(1, targetHeight);
+      targetWidth = Math.min(MAX_DIMENSION, Math.max(1, targetWidth));
+      targetHeight = Math.min(MAX_DIMENSION, Math.max(1, targetHeight));
 
       canvas.width = targetWidth;
       canvas.height = targetHeight;
@@ -141,12 +158,10 @@ const App: React.FC = () => {
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
         
-        // JPEG and WebP support quality parameter. PNG is lossless in canvas.toDataURL.
         const outputType = fileData.type === 'image/png' ? 'image/jpeg' : fileData.type;
         const dataUrl = canvas.toDataURL(outputType, settings.quality / 100);
         setResizedUrl(dataUrl);
 
-        // Estimate size from Base64
         const stringLength = dataUrl.split(',')[1].length;
         const sizeInBytes = Math.floor(stringLength * (3 / 4));
         setResultSize(sizeInBytes);
@@ -164,12 +179,23 @@ const App: React.FC = () => {
 
   const updateWidth = (w: number) => {
     if (!fileData) return;
-    const newWidth = isNaN(w) ? 0 : Math.max(0, w);
+    const newWidth = isNaN(w) ? 0 : w;
+    
+    if (newWidth > MAX_DIMENSION) {
+      alert(t.dimensionError);
+      return;
+    }
+
     pushToHistory(settings);
     setSettings(prev => {
       let newHeight = prev.height;
       if (prev.maintainAspectRatio && newWidth > 0) {
         newHeight = Math.round((newWidth / fileData.width) * fileData.height);
+        if (newHeight > MAX_DIMENSION) {
+          // If aspect ratio makes height > 4000, we should alert and maybe cap width
+          alert(t.dimensionError);
+          return prev;
+        }
       }
       return { ...prev, width: newWidth, height: newHeight };
     });
@@ -177,12 +203,22 @@ const App: React.FC = () => {
 
   const updateHeight = (h: number) => {
     if (!fileData) return;
-    const newHeight = isNaN(h) ? 0 : Math.max(0, h);
+    const newHeight = isNaN(h) ? 0 : h;
+
+    if (newHeight > MAX_DIMENSION) {
+      alert(t.dimensionError);
+      return;
+    }
+
     pushToHistory(settings);
     setSettings(prev => {
       let newWidth = prev.width;
       if (prev.maintainAspectRatio && newHeight > 0) {
         newWidth = Math.round((newHeight / fileData.height) * fileData.width);
+        if (newWidth > MAX_DIMENSION) {
+          alert(t.dimensionError);
+          return prev;
+        }
       }
       return { ...prev, height: newHeight, width: newWidth };
     });
@@ -200,6 +236,15 @@ const App: React.FC = () => {
   };
 
   const handlePercentageChange = (percentage: number) => {
+    const targetW = (fileData?.width || 0) * (percentage / 100);
+    const targetH = (fileData?.height || 0) * (percentage / 100);
+    
+    if (targetW > MAX_DIMENSION || targetH > MAX_DIMENSION) {
+      // Note: With 1-100% range, this only triggers if original is already > 4000
+      // We allow it to slide but we cap internally in performResize.
+      // However, if they manually "try" to set a high % on an already large image:
+      // alert(t.dimensionError);
+    }
     setSettings(prev => ({ ...prev, percentage }));
   };
 
@@ -211,7 +256,7 @@ const App: React.FC = () => {
     if (settings.unit === 'percent') {
       const w = Math.round((fileData?.width || 0) * settings.percentage / 100);
       const h = Math.round((fileData?.height || 0) * settings.percentage / 100);
-      return `${w} × ${h}`;
+      return `${Math.min(MAX_DIMENSION, w)} × ${Math.min(MAX_DIMENSION, h)}`;
     }
     return `${settings.width} × ${settings.height}`;
   };
