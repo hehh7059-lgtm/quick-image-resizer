@@ -3,8 +3,12 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageData, ResizeSettings } from './types';
 import AdPlaceholder from './components/AdPlaceholder';
 import FAQ from './components/FAQ';
+import { translations, Language } from './translations';
 
 const App: React.FC = () => {
+  const [lang, setLang] = useState<Language>('en');
+  const t = translations[lang];
+
   const [fileData, setFileData] = useState<ImageData | null>(null);
   const [settings, setSettings] = useState<ResizeSettings>({
     width: 0,
@@ -81,7 +85,6 @@ const App: React.FC = () => {
         targetHeight = Math.round((fileData.height * settings.percentage) / 100);
       }
 
-      // Safeguard against 0 dimensions for the final canvas processing
       targetWidth = Math.max(1, targetWidth);
       targetHeight = Math.max(1, targetHeight);
 
@@ -99,7 +102,6 @@ const App: React.FC = () => {
     img.src = fileData.originalUrl;
   }, [fileData, settings]);
 
-  // Automatic Live Preview with debounce
   useEffect(() => {
     if (!fileData || settings.width === 0 || settings.height === 0) return;
     const timeout = setTimeout(performResize, 150);
@@ -139,6 +141,14 @@ const App: React.FC = () => {
     return `${settings.width} × ${settings.height}`;
   };
 
+  const languages: { code: Language; name: string }[] = [
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'nl', name: 'Nederlands' }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -147,32 +157,46 @@ const App: React.FC = () => {
             <div className="bg-indigo-600 p-2 rounded-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
-            <span className="text-xl font-bold tracking-tight">QuickImageResizer</span>
+            <span className="text-xl font-bold tracking-tight hidden sm:inline">QuickImageResizer</span>
           </div>
-          <nav className="hidden md:block">
-            <ul className="flex space-x-6 text-sm font-medium text-gray-600">
-              <li><a href="#how-it-works" className="hover:text-indigo-600">How it Works</a></li>
-              <li><a href="#faq" className="hover:text-indigo-600">FAQ</a></li>
-              <li><a href="#privacy" className="hover:text-indigo-600">Privacy</a></li>
-            </ul>
-          </nav>
+          
+          <div className="flex items-center space-x-4">
+            <nav className="hidden lg:block">
+              <ul className="flex space-x-6 text-sm font-medium text-gray-600">
+                <li><a href="#how-it-works" className="hover:text-indigo-600">{t.howItWorks}</a></li>
+                <li><a href="#faq" className="hover:text-indigo-600">{t.faq}</a></li>
+                <li><a href="#privacy" className="hover:text-indigo-600">{t.privacy}</a></li>
+              </ul>
+            </nav>
+            <div className="relative">
+              <select 
+                value={lang} 
+                onChange={(e) => setLang(e.target.value as Language)}
+                className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2 outline-none cursor-pointer font-bold"
+              >
+                {languages.map(l => (
+                  <option key={l.code} value={l.code}>{l.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <AdPlaceholder type="banner" className="mb-8" />
+          <AdPlaceholder type="banner" label={t.adText} className="mb-8" />
 
           <section className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-              QuickImageResizer – Resize Images Online Instantly
+            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 px-4 leading-tight">
+              {t.title}
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Free, fast, and private. No upload required. Your images never leave your browser.
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
+              {t.subheading}
             </p>
-            <div className="mt-4 inline-flex items-center px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+            <div className="mt-6 inline-flex items-center px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
               <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
-              100% Secure & Client-Side
+              {t.trustText}
             </div>
           </section>
 
@@ -194,23 +218,23 @@ const App: React.FC = () => {
                   <div className="bg-indigo-50 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform">
                     <svg className="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                   </div>
-                  <p className="text-2xl font-bold text-gray-800 mb-2">Drag and drop your image</p>
-                  <p className="text-gray-500 mb-8">Supports JPG, PNG, and WebP formats</p>
+                  <p className="text-2xl font-bold text-gray-800 mb-2">{t.dropText}</p>
+                  <p className="text-gray-500 mb-8">{t.supportFormats}</p>
                   <button className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 transition-colors">
-                    Browse Files
+                    {t.browseFiles}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-6">
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden p-6">
                     <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-bold text-gray-900">1. Original Image</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{t.originalImage}</h2>
                       <button 
                         onClick={reset}
                         className="text-red-500 font-bold text-sm hover:underline flex items-center"
                       >
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Remove
+                        {t.remove}
                       </button>
                     </div>
                     <div className="flex flex-col md:flex-row gap-8">
@@ -221,7 +245,7 @@ const App: React.FC = () => {
                           className="max-h-[400px] object-contain"
                         />
                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded text-white text-xs font-bold uppercase tracking-wider">
-                          Original: {fileData.width} × {fileData.height} px
+                          {t.originalSize}: {fileData.width} × {fileData.height} px
                         </div>
                       </div>
                       
@@ -229,7 +253,7 @@ const App: React.FC = () => {
                         <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 shadow-sm">
                           <h3 className="font-bold text-indigo-900 mb-4 flex items-center">
                             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path></svg>
-                            2. Resize Options
+                            {t.resizeOptions}
                           </h3>
                           
                           <div className="space-y-4">
@@ -238,20 +262,20 @@ const App: React.FC = () => {
                                 onClick={() => setSettings(s => ({...s, unit: 'px'}))}
                                 className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${settings.unit === 'px' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
                               >
-                                Pixels
+                                {t.pixels}
                               </button>
                               <button 
                                 onClick={() => setSettings(s => ({...s, unit: 'percent'}))}
                                 className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${settings.unit === 'percent' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
                               >
-                                Percentage
+                                {t.percentage}
                               </button>
                             </div>
 
                             {settings.unit === 'px' ? (
                               <div className="space-y-4">
                                 <div>
-                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Width (px)</label>
+                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t.width}</label>
                                   <input 
                                     type="number" 
                                     value={settings.width === 0 ? '' : settings.width}
@@ -261,7 +285,7 @@ const App: React.FC = () => {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Height (px)</label>
+                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t.height}</label>
                                   <input 
                                     type="number" 
                                     value={settings.height === 0 ? '' : settings.height}
@@ -278,13 +302,13 @@ const App: React.FC = () => {
                                     onChange={(e) => setSettings(s => ({...s, maintainAspectRatio: e.target.checked}))}
                                     className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                   />
-                                  <label htmlFor="ratio" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">Lock Aspect Ratio</label>
+                                  <label htmlFor="ratio" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">{t.lockRatio}</label>
                                 </div>
                               </div>
                             ) : (
                               <div className="space-y-4">
                                 <div className="flex justify-between items-center mb-1">
-                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Resize Factor</label>
+                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">{t.resizeFactor}</label>
                                   <span className="text-indigo-600 font-bold">{settings.percentage}%</span>
                                 </div>
                                 <input 
@@ -305,7 +329,7 @@ const App: React.FC = () => {
 
                             <div className="pt-2">
                                 <div className={`text-center py-2 px-4 rounded-lg bg-white border border-indigo-100 text-xs font-bold text-indigo-600 transition-opacity ${isResizing ? 'opacity-50' : 'opacity-100'}`}>
-                                   New Size: {getCurrentDimensions()} px
+                                   {t.newSize}: {getCurrentDimensions()} px
                                 </div>
                             </div>
                           </div>
@@ -319,10 +343,10 @@ const App: React.FC = () => {
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
                           <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                            3. Live Preview
-                            {isResizing && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 animate-pulse">Updating...</span>}
+                            {t.livePreview}
+                            {isResizing && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 animate-pulse">{t.updating}</span>}
                           </h2>
-                          <p className="text-xs text-gray-400 font-medium">Rendered at {getCurrentDimensions()} px</p>
+                          <p className="text-xs text-gray-400 font-medium">{t.renderedAt} {getCurrentDimensions()} px</p>
                         </div>
                         <a 
                           href={resizedUrl} 
@@ -330,7 +354,7 @@ const App: React.FC = () => {
                           className="w-full sm:w-auto bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 active:scale-95 shadow-lg flex items-center justify-center transition-all"
                         >
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                          Download Resized Image
+                          {t.downloadBtn}
                         </a>
                       </div>
                       <div className="bg-gray-100 rounded-xl overflow-auto flex items-center justify-center p-8 border-2 border-dashed border-gray-200 min-h-[300px]">
@@ -347,24 +371,24 @@ const App: React.FC = () => {
             </div>
 
             <div className="space-y-8">
-              <AdPlaceholder type="in-content" />
+              <AdPlaceholder type="in-content" label={t.adText} />
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center">
                    <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                   Why QuickImageResizer?
+                   {t.whyUs}
                 </h3>
                 <ul className="space-y-3 text-sm text-gray-600">
                   <li className="flex items-start">
                     <svg className="w-4 h-4 mt-0.5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    <span><strong>100% Private:</strong> Your images are processed in your RAM, not on our disk.</span>
+                    <span>{t.privateTrust}</span>
                   </li>
                   <li className="flex items-start">
                     <svg className="w-4 h-4 mt-0.5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    <span><strong>No Signup:</strong> We don't need your email or data to help you resize.</span>
+                    <span>{t.signupTrust}</span>
                   </li>
                   <li className="flex items-start">
                     <svg className="w-4 h-4 mt-0.5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    <span><strong>Fast Scaling:</strong> Instant preview and download for all major formats.</span>
+                    <span>{t.fastTrust}</span>
                   </li>
                 </ul>
               </div>
@@ -372,40 +396,40 @@ const App: React.FC = () => {
                 <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                 <h3 className="font-bold mb-2 flex items-center">
                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                   Pro Tip!
+                   {t.proTip}
                 </h3>
                 <p className="text-sm opacity-90 leading-relaxed">
-                  Locking the aspect ratio ensures your photos don't look stretched. Use the percentage slider for the fastest web optimization results.
+                  {t.proTipText}
                 </p>
               </div>
             </div>
           </div>
           
           <div id="how-it-works" className="mt-20 py-16 bg-white rounded-3xl border border-gray-200 px-8 text-center max-w-4xl mx-auto shadow-sm">
-            <h2 className="text-3xl font-bold mb-12">How To Resize Images Online</h2>
+            <h2 className="text-3xl font-bold mb-12">{t.howItWorks}</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="space-y-4">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xl mx-auto">1</div>
-                <h4 className="font-bold text-gray-900">Upload Image</h4>
-                <p className="text-gray-500 text-sm">Drag your JPG, PNG, or WebP file into the dropzone or click to browse.</p>
+                <h4 className="font-bold text-gray-900">{t.step1}</h4>
+                <p className="text-gray-500 text-sm">{t.step1Text}</p>
               </div>
               <div className="space-y-4">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xl mx-auto">2</div>
-                <h4 className="font-bold text-gray-900">Adjust Settings</h4>
-                <p className="text-gray-500 text-sm">Input specific dimensions or use the percentage slider for instant resizing.</p>
+                <h4 className="font-bold text-gray-900">{t.step2}</h4>
+                <p className="text-gray-500 text-sm">{t.step2Text}</p>
               </div>
               <div className="space-y-4">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xl mx-auto">3</div>
-                <h4 className="font-bold text-gray-900">Download Result</h4>
-                <p className="text-gray-500 text-sm">Check the live preview and download your high-quality resized photo.</p>
+                <h4 className="font-bold text-gray-900">{t.step3}</h4>
+                <p className="text-gray-500 text-sm">{t.step3Text}</p>
               </div>
             </div>
           </div>
 
           <div id="faq">
-            <FAQ />
+            <FAQ language={lang} />
           </div>
-          <AdPlaceholder type="footer" />
+          <AdPlaceholder type="footer" label={t.adText} />
         </div>
       </main>
 
@@ -418,15 +442,15 @@ const App: React.FC = () => {
             <span className="text-xl font-bold tracking-tight">QuickImageResizer</span>
           </div>
           <p className="text-gray-400 max-w-md mx-auto mb-8 text-sm">
-            QuickImageResizer is the world's most private online image resizing tool. We believe your images belong to you, which is why we never upload them anywhere.
+            {t.footerTrust}
           </p>
           <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-400 mb-8">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
-            <a href="#" className="hover:text-white">Contact Us</a>
+            <a href="#privacy" className="hover:text-white">{t.privacyPolicy}</a>
+            <a href="#" className="hover:text-white">{t.terms}</a>
+            <a href="#" className="hover:text-white">{t.contact}</a>
           </div>
           <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} QuickImageResizer. All rights reserved. No cookies, no trackers, just fast resizing.
+            © {new Date().getFullYear()} QuickImageResizer. {t.rights}
           </p>
         </div>
       </footer>
