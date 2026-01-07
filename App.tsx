@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { ImageData, ResizeSettings } from './types';
-import AdPlaceholder from './components/AdPlaceholder';
-import FAQ from './components/FAQ';
-import { translations, Language } from './translations';
+import { ImageData, ResizeSettings } from './types.ts';
+import AdPlaceholder from './components/AdPlaceholder.tsx';
+import FAQ from './components/FAQ.tsx';
+import { translations, Language } from './translations.ts';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
