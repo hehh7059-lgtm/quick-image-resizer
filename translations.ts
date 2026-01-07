@@ -48,7 +48,12 @@ export const translations = {
     rights: "All rights reserved. No cookies, no trackers, just fast resizing.",
     adText: "Advertisement",
     undo: "Undo",
-    redo: "Redo"
+    redo: "Redo",
+    compression: "Image Compression (Quality)",
+    quality: "Quality",
+    resultingSize: "Estimated Result Size",
+    kb: "KB",
+    mb: "MB"
   },
   es: {
     title: "QuickImageResizer – Redimensionar Imágenes Online al Instante",
@@ -96,7 +101,12 @@ export const translations = {
     rights: "Todos los derechos reservados. Sin cookies ni rastreadores.",
     adText: "Publicidad",
     undo: "Deshacer",
-    redo: "Rehacer"
+    redo: "Rehacer",
+    compression: "Compresión de Imagen (Calidad)",
+    quality: "Calidad",
+    resultingSize: "Tamaño estimado",
+    kb: "KB",
+    mb: "MB"
   },
   fr: {
     title: "QuickImageResizer – Redimensionner vos Images Instantanément",
@@ -144,7 +154,12 @@ export const translations = {
     rights: "Tous droits réservés. Pas de cookies, pas de traqueurs.",
     adText: "Publicité",
     undo: "Annuler",
-    redo: "Rétablir"
+    redo: "Rétablir",
+    compression: "Compression d'image (Qualité)",
+    quality: "Qualité",
+    resultingSize: "Taille estimée",
+    kb: "KB",
+    mb: "MB"
   },
   de: {
     title: "QuickImageResizer – Bilder online sofort anpassen",
@@ -192,7 +207,12 @@ export const translations = {
     rights: "Alle Rechte vorbehalten. Keine Cookies, kein Tracking.",
     adText: "Werbung",
     undo: "Rückgängig",
-    redo: "Wiederholen"
+    redo: "Wiederholen",
+    compression: "Bildkompression (Qualität)",
+    quality: "Qualität",
+    resultingSize: "Geschätzte Größe",
+    kb: "KB",
+    mb: "MB"
   },
   nl: {
     title: "QuickImageResizer – Verklein afbeeldingen direct online",
@@ -240,6 +260,11 @@ export const translations = {
     rights: "Alle rechten voorbehouden. Geen cookies, geen trackers.",
     adText: "Advertentie",
     undo: "Ongedaan maken",
-    redo: "Opnieuw"
+    redo: "Opnieuw",
+    compression: "Beeldcompressie (Kwaliteit)",
+    quality: "Kwaliteit",
+    resultingSize: "Geschatte grootte",
+    kb: "KB",
+    mb: "MB"
   }
 };

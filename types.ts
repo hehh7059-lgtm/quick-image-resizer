@@ -5,6 +5,7 @@ export interface ResizeSettings {
   maintainAspectRatio: boolean;
   unit: 'px' | 'percent';
   percentage: number;
+  quality: number;
 }
 
 export interface ImageData {
@@ -13,4 +14,5 @@ export interface ImageData {
   type: string;
   width: number;
   height: number;
+  size: number; // Size in bytes
 }

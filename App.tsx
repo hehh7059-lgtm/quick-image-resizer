@@ -16,19 +16,20 @@ const App: React.FC = () => {
     maintainAspectRatio: true,
     unit: 'px',
     percentage: 50,
+    quality: 90,
   });
 
-  // History state for Undo/Redo
   const [history, setHistory] = useState<ResizeSettings[]>([]);
   const [future, setFuture] = useState<ResizeSettings[]>([]);
 
   const [resizedUrl, setResizedUrl] = useState<string | null>(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [resultSize, setResultSize] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const pushToHistory = (prevSettings: ResizeSettings) => {
     setHistory(prev => [...prev, prevSettings]);
-    setFuture([]); // Clear redo stack on new action
+    setFuture([]);
   };
 
   const handleUndo = () => {
@@ -47,6 +48,14 @@ const App: React.FC = () => {
     setSettings(next);
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', t.kb, t.mb];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleFileUpload = (file: File) => {
     if (!file.type.startsWith('image/')) return;
 
@@ -60,6 +69,7 @@ const App: React.FC = () => {
           type: file.type,
           width: img.width,
           height: img.height,
+          size: file.size,
         };
         setFileData(data);
         const initialSettings: ResizeSettings = {
@@ -68,6 +78,7 @@ const App: React.FC = () => {
           maintainAspectRatio: true,
           unit: 'px',
           percentage: 50,
+          quality: 90,
         };
         setSettings(initialSettings);
         setHistory([]);
@@ -94,12 +105,14 @@ const App: React.FC = () => {
     setResizedUrl(null);
     setHistory([]);
     setFuture([]);
+    setResultSize(null);
     setSettings({
       width: 0,
       height: 0,
       maintainAspectRatio: true,
       unit: 'px',
       percentage: 50,
+      quality: 90,
     });
   };
 
@@ -127,8 +140,16 @@ const App: React.FC = () => {
       if (ctx) {
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL(fileData.type, 0.9);
+        
+        // JPEG and WebP support quality parameter. PNG is lossless in canvas.toDataURL.
+        const outputType = fileData.type === 'image/png' ? 'image/jpeg' : fileData.type;
+        const dataUrl = canvas.toDataURL(outputType, settings.quality / 100);
         setResizedUrl(dataUrl);
+
+        // Estimate size from Base64
+        const stringLength = dataUrl.split(',')[1].length;
+        const sizeInBytes = Math.floor(stringLength * (3 / 4));
+        setResultSize(sizeInBytes);
       }
       setIsResizing(false);
     };
@@ -137,7 +158,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!fileData || settings.width === 0 || settings.height === 0) return;
-    const timeout = setTimeout(performResize, 150);
+    const timeout = setTimeout(performResize, 200);
     return () => clearTimeout(timeout);
   }, [fileData, settings, performResize]);
 
@@ -180,6 +201,10 @@ const App: React.FC = () => {
 
   const handlePercentageChange = (percentage: number) => {
     setSettings(prev => ({ ...prev, percentage }));
+  };
+
+  const handleQualityChange = (quality: number) => {
+    setSettings(prev => ({ ...prev, quality }));
   };
 
   const getCurrentDimensions = () => {
@@ -235,7 +260,6 @@ const App: React.FC = () => {
 
       <main className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Top Banner Ad - Leaderboard */}
           <AdPlaceholder type="banner" label={t.adText} className="mb-12" />
 
           <section className="text-center mb-12">
@@ -296,7 +320,7 @@ const App: React.FC = () => {
                           className="max-h-[400px] object-contain"
                         />
                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded text-white text-xs font-bold uppercase tracking-wider">
-                          {t.originalSize}: {fileData.width} × {fileData.height} px
+                          {t.originalSize}: {fileData.width} × {fileData.height} px ({formatFileSize(fileData.size)})
                         </div>
                       </div>
                       
@@ -400,6 +424,27 @@ const App: React.FC = () => {
                               </div>
                             )}
 
+                            {/* KB Compression / Quality Section */}
+                            <div className="pt-4 border-t border-indigo-100">
+                              <div className="flex justify-between items-center mb-1">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">{t.compression}</label>
+                                <span className="text-indigo-600 font-bold">{settings.quality}%</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="5" 
+                                max="100" 
+                                value={settings.quality}
+                                onMouseDown={() => pushToHistory(settings)}
+                                onTouchStart={() => pushToHistory(settings)}
+                                onChange={(e) => handleQualityChange(parseInt(e.target.value))}
+                                className="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                              />
+                              <div className="mt-2 text-[10px] text-gray-500 leading-tight">
+                                {t.resultingSize}: <span className="font-bold text-indigo-600">{resultSize ? formatFileSize(resultSize) : '...'}</span>
+                              </div>
+                            </div>
+
                             <div className="pt-2">
                                 <div className={`text-center py-2 px-4 rounded-lg bg-white border border-indigo-100 text-xs font-bold text-indigo-600 transition-opacity ${isResizing ? 'opacity-50' : 'opacity-100'}`}>
                                    {t.newSize}: {getCurrentDimensions()} px
@@ -419,7 +464,7 @@ const App: React.FC = () => {
                             {t.livePreview}
                             {isResizing && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 animate-pulse">{t.updating}</span>}
                           </h2>
-                          <p className="text-xs text-gray-400 font-medium">{t.renderedAt} {getCurrentDimensions()} px</p>
+                          <p className="text-xs text-gray-400 font-medium">{t.renderedAt} {getCurrentDimensions()} px • {resultSize ? formatFileSize(resultSize) : ''}</p>
                         </div>
                         <a 
                           href={resizedUrl} 
