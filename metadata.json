@@ -1,0 +1,5 @@
+{
+  "name": "QuickImageResizer",
+  "description": "QuickImageResizer is a fast, secure, and private online tool to resize images instantly without uploading them to any server. Support for JPG, PNG, and WebP.",
+  "requestFramePermissions": []
+}
